@@ -6,8 +6,13 @@
 /auth-microservice/dist
 /auth-microservice/node_modules
 /auth-microservice/build
-
 /auth-microservice/.env
+
+/book-microservice/dist
+/book-microservice/node_modules
+/book-microservice/build
+
+/book-microservice/.env
 # Logs
 logs
 *.log
