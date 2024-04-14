@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -6,6 +12,7 @@ import { CreateUserDto } from './dto/create-auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginResponse, RResponse } from 'src/models/response';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +29,34 @@ export class AuthService {
     };
   }
 
+  async signIn(loginDto: LoginDto): Promise<LoginResponse> {
+    const user = await this.userRepository.findOne({
+      where: { email: loginDto.email },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`Incorrect email or password`);
+    }
+    const passwordCheck = await this.checkPassword(
+      loginDto.password,
+      user.password,
+    );
+    if (!passwordCheck) {
+      throw new NotFoundException(`Incorrect email or password`);
+    }
+    const userData = {
+      id: user.id,
+      email: user.email,
+      password: user.password,
+    };
+    return {
+      accessToken: await this.jwtService.signAsync(userData),
+      user: { ...userData, password: undefined },
+      message: 'Successfully logged in',
+      status: 200,
+    };
+  }
+
   async signUp(userDto: CreateUserDto): Promise<RResponse> {
     try {
       const user: User = new User();
@@ -35,11 +70,7 @@ export class AuthService {
       });
 
       if (isUserExist) {
-        return {
-          message: 'please login with your email and password',
-          data: {},
-          error: 'duplicate email detected',
-        };
+        throw new ConflictException(`Duplicate email`);
       }
 
       const userData = await this.userRepository.save(user);
@@ -61,6 +92,10 @@ export class AuthService {
         },
       );
     }
+  }
+
+  async checkPassword(password: string, existingPassword: string) {
+    return await bcrypt.compare(password, existingPassword);
   }
 
   async encryptPassword(password: string) {

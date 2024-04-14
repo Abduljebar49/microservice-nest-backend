@@ -1,6 +1,8 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-auth.dto';
+import { LoginDto } from './dto/login.dto';
+import { Public } from 'src/constants';
 
 @Controller('auth')
 export class AuthController {
@@ -10,6 +12,13 @@ export class AuthController {
   allUsers() {
     return this.authService.getUsers();
   }
+
+  @Public()
+  @Post('login')
+  signIn(@Body() signInDto: LoginDto) {
+    return this.authService.signIn(signInDto);
+  }
+
 
   @Post('register')
   registerUser(@Body() body: CreateUserDto) {
@@ -29,3 +38,4 @@ export class AuthController {
     return { message: 'greeting' };
   }
 }
+
