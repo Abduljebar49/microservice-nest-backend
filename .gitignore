@@ -7,6 +7,7 @@
 /auth-microservice/node_modules
 /auth-microservice/build
 
+/auth-microservice/.env
 # Logs
 logs
 *.log
