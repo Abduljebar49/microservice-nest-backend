@@ -3,6 +3,10 @@
 /node_modules
 /build
 
+/auth-microservice/dist
+/auth-microservice/node_modules
+/auth-microservice/build
+
 # Logs
 logs
 *.log
